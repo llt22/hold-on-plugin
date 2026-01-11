@@ -1,0 +1,68 @@
+{
+  "name": "hold-on-plugin",
+  "displayName": "Hold On - AI Feedback Panel",
+  "description": "让 AI 停下来听你说话 - IDE 内嵌反馈面板",
+  "version": "0.1.0",
+  "publisher": "llt22",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "mcp",
+    "ai",
+    "feedback",
+    "windsurf",
+    "cursor",
+    "claude"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "hold-on.feedbackView",
+          "name": "Hold On",
+          "visibility": "visible"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "hold-on.copyMcpConfig",
+        "title": "Hold On: Copy MCP Config"
+      },
+      {
+        "command": "hold-on.showPanel",
+        "title": "Hold On: Show Feedback Panel"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@types/ws": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "ws": "^8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/llt22/hold-on-plugin.git"
+  },
+  "license": "MIT"
+}
