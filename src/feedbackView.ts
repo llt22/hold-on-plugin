@@ -29,6 +29,14 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
     };
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+    
+    // 如果有待处理的请求，立即发送
+    if (this._currentPrompt) {
+      webviewView.webview.postMessage({
+        type: 'showPrompt',
+        prompt: this._currentPrompt
+      });
+    }
 
     // 处理来自 Webview 的消息
     webviewView.webview.onDidReceiveMessage((data: { type: string; text?: string; images?: string[] }) => {
@@ -60,10 +68,20 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
   }
 
   // 请求用户反馈
-  public requestFeedback(prompt: string): Promise<FeedbackResult> {
-    return new Promise((resolve) => {
+  public async requestFeedback(prompt: string): Promise<FeedbackResult> {
+    return new Promise(async (resolve) => {
       this._currentPrompt = prompt;
       this._pendingCallback = resolve;
+      
+      // 如果面板未初始化，先展开面板
+      if (!this._view) {
+        await vscode.commands.executeCommand('hold-on.feedbackView.focus');
+        // 轮询等待面板初始化，最多等待 3 秒
+        for (let i = 0; i < 6; i++) {
+          if (this._view) break;
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
       
       // 显示面板并更新内容
       if (this._view) {
@@ -155,7 +173,7 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
     .prompt-box {
       background: var(--vscode-input-background);
       border: 1px solid var(--vscode-input-border);
-      border-radius: 6px;
+      border-radius: 4px;
       padding: 12px;
       margin-bottom: 16px;
     }
@@ -181,9 +199,10 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
     
     .input-area {
       border: 1px solid var(--vscode-input-border);
-      border-radius: 6px;
+      border-radius: 4px;
       background: var(--vscode-input-background);
       margin-bottom: 12px;
+      transition: border-color 0.2s;
     }
     
     .input-area:focus-within {
@@ -193,6 +212,7 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
     textarea {
       width: 100%;
       border: none;
+      outline: none;
       resize: none;
       min-height: 80px;
       padding: 12px;
@@ -243,10 +263,19 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
       border: none;
       border-radius: 50%;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .image-item .remove:hover {
+      background: var(--vscode-errorForeground);
+      opacity: 0.8;
     }
     
     .helper-text {
@@ -263,11 +292,12 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
     
     button {
       padding: 6px 14px;
-      border-radius: 4px;
+      border-radius: 2px;
       font-size: 13px;
       cursor: pointer;
       border: none;
       font-family: inherit;
+      transition: background-color 0.2s;
     }
     
     .btn-secondary {
