@@ -29,12 +29,9 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('hold-on.copyMcpConfig', async () => {
       const wrapperPath = path.join(context.extensionPath, 'dist', 'mcp-stdio-wrapper.js');
       
-      // 自动获取 node 路径
-      const nodePath = process.execPath;
-      
       const config = {
         "hold-on-plugin": {
-          "command": nodePath,
+          "command": "node",
           "args": [wrapperPath]
         }
       };
