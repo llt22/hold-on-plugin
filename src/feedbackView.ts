@@ -339,7 +339,7 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
         <div class="images-preview" id="imagesPreview"></div>
       </div>
       
-      <div class="helper-text">
+      <div class="helper-text" id="helperText">
         粘贴图片 Ctrl+V • 提交 Ctrl+Enter
       </div>
       
@@ -360,6 +360,12 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
     const textInput = document.getElementById('textInput');
     const imagesPreview = document.getElementById('imagesPreview');
     const inputArea = document.getElementById('inputArea');
+    const helperText = document.getElementById('helperText');
+    
+    // 根据操作系统更新快捷键提示
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const modKey = isMac ? 'Cmd' : 'Ctrl';
+    helperText.textContent = \`粘贴图片 \${modKey}+V • 提交 \${modKey}+Enter\`;
     
     // 处理来自扩展的消息
     window.addEventListener('message', event => {
