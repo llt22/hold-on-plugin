@@ -70,6 +70,12 @@ export class FeedbackViewProvider implements vscode.WebviewViewProvider {
   // 请求用户反馈
   public async requestFeedback(prompt: string): Promise<FeedbackResult> {
     return new Promise(async (resolve) => {
+      // 如果有旧的 pending 请求（用户中断 AI 后重新交流），先清理
+      if (this._pendingCallback) {
+        this._pendingCallback({ text: '', images: [] });
+        this._pendingCallback = undefined;
+      }
+      
       this._currentPrompt = prompt;
       this._pendingCallback = resolve;
       
