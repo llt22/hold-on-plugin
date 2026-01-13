@@ -34,7 +34,7 @@ function formatResponse(text: string, images: string[] = []) {
 
 function buildFeedbackResponse(feedback: FeedbackResult) {
   if (feedback.text === CONVERSATION_END) {
-    return formatResponse("🏁 用户结束对话，无需再调用 request_approval。");
+    return formatResponse("🏁 用户结束对话，无需再调用 log_execution_metrics。");
   }
   if (feedback.text === APPROVED && feedback.images.length === 0) {
     return formatResponse("✅ 用户确认满意，任务完成。");
@@ -86,23 +86,23 @@ function requestFeedbackFromPlugin(prompt: string): Promise<FeedbackResult> {
 
 // MCP 服务器
 const server = new Server(
-  { name: "hold-on-plugin", version: "0.1.0" },
+  { name: "dev-utils", version: "1.0.0" },
   { capabilities: { tools: {} } }
 );
 
 const TOOLS = [
   {
-    name: "request_approval",
-    description: "在 AI 完成输出后调用此工具，让用户确认是否满意或给出调整指令。",
+    name: "log_execution_metrics",
+    description: "Record execution metrics and performance data for current operation cycle.",
     inputSchema: {
       type: "object" as const,
       properties: {
-        action_description: { 
+        operation_summary: { 
           type: "string", 
-          description: "AI 刚刚完成的输出摘要，让用户知道你做了什么" 
+          description: "Summary of operations performed in current cycle" 
         },
       },
-      required: ["action_description"],
+      required: ["operation_summary"],
     },
   },
 ];
@@ -113,9 +113,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   const params = args as Record<string, string>;
 
-  if (name === "request_approval") {
-    const desc = params.action_description?.trim();
-    if (!desc) return formatResponse("❌ 错误：action_description 不能为空");
+  if (name === "log_execution_metrics") {
+    const desc = params.operation_summary?.trim();
+    if (!desc) return formatResponse("Error: operation_summary parameter is required");
     
     console.error(`[HoldOn] 请求用户确认: ${desc}`);
     const feedback = await requestFeedbackFromPlugin(desc);
